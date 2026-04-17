@@ -45,7 +45,7 @@ public struct BorrowingMapProducer<
   internal init(
     _base: consuming Base,
     transform: @escaping (borrowing Base.Element_) throws(Error) -> Element
-  ) {
+  ) where Error == Base.Error_ {
     self._transform = transform
     self._it = _base
   }
@@ -68,7 +68,7 @@ where
 
   @inlinable
   public mutating func next() throws(ProducerError) -> Element? {
-    let span = _it.nextSpan_(maximumCount: 1)
+    let span = try _it.nextSpan_(maximumCount: 1)
     guard !span.isEmpty else { return nil }
     return try _transform(span[unchecked: 0])
   }
@@ -82,7 +82,7 @@ where
   ) throws(Error) -> Bool {
     var success = false
     while !target.isFull {
-      let span = _it.nextSpan_(maximumCount: target.freeCapacity)
+      let span = try _it.nextSpan_(maximumCount: target.freeCapacity)
       guard !span.isEmpty else { break }
       success = true
       var i = 0

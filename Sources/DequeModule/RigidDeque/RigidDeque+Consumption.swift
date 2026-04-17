@@ -165,7 +165,7 @@ extension RigidDeque where Element: ~Copyable {
 #endif
 }
 
-#if compiler(>=6.3) && COLLECTIONS_UNSTABLE_CONTAINERS_PREVIEW
+#if compiler(>=6.4) && COLLECTIONS_UNSTABLE_CONTAINERS_PREVIEW
 @available(SwiftStdlib 5.0, *)
 extension RigidDeque where Element: ~Copyable {
   @_alwaysEmitIntoClient

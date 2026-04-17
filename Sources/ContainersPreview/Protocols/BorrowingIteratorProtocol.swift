@@ -18,9 +18,10 @@ import InternalCollectionsUtilities
 #endif
 
 @available(SwiftStdlib 5.0, *)
-public protocol BorrowingIteratorProtocol_<Element_>: ~Copyable, ~Escapable {
+public protocol BorrowingIteratorProtocol_<Element_, Error_>: ~Copyable, ~Escapable {
   associatedtype Element_: ~Copyable
-
+  associatedtype Error_: Error
+  
   // FIXME: This ought to be a core requirement, but `Ref` is not a thing yet.
 //  @_lifetime(&self)
 //  @_lifetime(self: copy self)
@@ -74,7 +75,7 @@ public protocol BorrowingIteratorProtocol_<Element_>: ~Copyable, ~Escapable {
   /// method may vary between different borrows of the same container.)
   @_lifetime(&self)
   @_lifetime(self: copy self)
-  mutating func nextSpan_(maximumCount: Int) -> Span<Element_>
+  mutating func nextSpan_(maximumCount: Int) throws(Error_) -> Span<Element_>
 
   /// Advance the position of this iterator by the specified offset, or until
   /// the end of the underlying sequence.
@@ -86,7 +87,7 @@ public protocol BorrowingIteratorProtocol_<Element_>: ~Copyable, ~Escapable {
   ///
   /// `maximumOffset` must be nonnegative.
   @_lifetime(self: copy self)
-  mutating func skip_(by maximumOffset: Int) -> Int
+  mutating func skip_(by maximumOffset: Int) throws(Error_) -> Int
   
   // FIXME: Add BidirectionalBorrowingIteratorProtocol and RandomAccessBorrowingIteratorProtocol.
   // BidirectionalBorrowingIteratorProtocol would need to have a `previousSpan`
@@ -101,8 +102,8 @@ where Self: ~Copyable & ~Escapable, Element_: ~Copyable {
   @_lifetime(&self)
   @_lifetime(self: copy self)
   @_transparent
-  public mutating func nextSpan_() -> Span<Element_> {
-    nextSpan_(maximumCount: Int.max)
+  public mutating func nextSpan_() throws(Error_) -> Span<Element_> {
+    try nextSpan_(maximumCount: Int.max)
   }
 }
 
@@ -111,10 +112,10 @@ extension BorrowingIteratorProtocol_
 where Self: ~Copyable & ~Escapable, Element_: ~Copyable {
   @_lifetime(self: copy self)
   @inlinable
-  public mutating func skip_(by offset: Int) -> Int {
+  public mutating func skip_(by offset: Int) throws(Error_) -> Int {
     var remainder = offset
     while remainder > 0 {
-      let span = nextSpan_(maximumCount: remainder)
+      let span = try nextSpan_(maximumCount: remainder)
       if span.isEmpty { break }
       remainder &-= span.count
     }

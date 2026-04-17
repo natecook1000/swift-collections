@@ -18,7 +18,7 @@ import PackageDescription
 let _traits: Set<Trait> = [
   .default(
     enabledTraits: [
-      //"UnstableContainersPreview"
+      "UnstableContainersPreview"
     ]),
   .trait(
     name: "UnstableContainersPreview",

@@ -425,7 +425,7 @@ where
 
   @inlinable
   public mutating func append<
-    S: BorrowingSequence_<Element> & ~Copyable & ~Escapable
+    S: BorrowingSequence_<Element, Never> & ~Copyable & ~Escapable
   >(
     copying items: borrowing S
   ) {

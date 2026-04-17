@@ -64,8 +64,8 @@ extension BorrowingSequence_
   @inlinable
   public func elementsEqual<OtherSequence: BorrowingSequence_>(
     _ other: borrowing OtherSequence,
-    by areEquivalent: (borrowing Element_, borrowing OtherSequence.Element_) throws -> Bool
-  ) rethrows -> Bool
+    by areEquivalent: (borrowing Element_, borrowing OtherSequence.Element_) throws(Error_) -> Bool
+  ) throws(Error_) -> Bool
   where OtherSequence: ~Copyable & ~Escapable, OtherSequence.Element_: ~Copyable
   {
     // FIXME: Forward to the iterator's implementation of same

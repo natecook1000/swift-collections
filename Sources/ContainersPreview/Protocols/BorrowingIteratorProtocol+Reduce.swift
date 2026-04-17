@@ -13,6 +13,48 @@
 
 #if compiler(>=6.4) && COLLECTIONS_UNSTABLE_CONTAINERS_PREVIEW
 
+public enum Either_<Left, Right> {
+  case left(Left)
+  case right(Right)
+}
+extension Either_: Error where Left: Error, Right: Error {}
+extension Either_: Sendable where Left: Sendable, Right: Sendable {}
+
+extension Either_ {
+  @inlinable
+  static func doLeft<T: ~Copyable & ~Escapable>(_ body: () throws(Left) -> T) throws(Either_) -> T {
+    do {
+      return try body()
+    } catch {
+      throw Either_.left(error)
+    }
+  }
+  
+  @inlinable
+  static func doRight<T: ~Copyable & ~Escapable>(_ body: () throws(Right) -> T) throws(Either_) -> T {
+    do {
+      return try body()
+    } catch {
+      throw Either_.right(error)
+    }
+  }
+}
+
+//func catchEither<T: ~Copyable, L: Error, R: Error>(_ body: () throws(L) -> T, _unusedError: R.Type = R.self) throws(Either_<L, R>) -> T {
+//  do {
+//    return try body()
+//  } catch {
+//    throw Either_.left(error)
+//  }
+//}
+//func catchEither<T: ~Copyable, L: Error, R: Error>(_ body: () throws(R) -> T, _unusedError: L.Type = L.self) throws(Either_<L, R>) -> T {
+//  do {
+//    return try body()
+//  } catch {
+//    throw Either_.right(error)
+//  }
+//}
+
 @available(SwiftStdlib 5.0, *)
 extension BorrowingIteratorProtocol_
 where
@@ -23,14 +65,14 @@ where
   public consuming func reduce<Result: ~Copyable, E: Error>(
     _ initialResult: consuming Result,
     _ nextPartialResult: (consuming Result, borrowing Element_) throws(E) -> Result
-  ) throws(E) -> Result {
+  ) throws(Either_<Error_, E>) -> Result {
     var result = initialResult
     while true {
-      let span = self.nextSpan_()
+      let span = try Either_<Error_, E>.doLeft { try self.nextSpan_() }
       guard !span.isEmpty else { break }
       var i = 0
       while i < span.count {
-        result = try nextPartialResult(result, span[unchecked: i])
+        result = try Either_<Error_, E>.doRight { try nextPartialResult(result, span[unchecked: i]) }
         i &+= 1
       }
     }
@@ -41,14 +83,14 @@ where
   public consuming func reduce<Result: ~Copyable, E: Error>(
     into initialResult: consuming Result,
     _ updateAccumulatingResult: (inout Result, borrowing Element_) throws(E) -> Void
-  ) throws(E) -> Result {
+  ) throws(Either_<Error_, E>) -> Result {
     var result = initialResult
     while true {
-      let span = self.nextSpan_()
+      let span = try Either_<Error_, E>.doLeft { try self.nextSpan_() }
       guard !span.isEmpty else { break }
       var i = 0
       while i < span.count {
-        try updateAccumulatingResult(&result, span[unchecked: i])
+        try Either_<Error_, E>.doRight { try updateAccumulatingResult(&result, span[unchecked: i]) }
         i &+= 1
       }
     }

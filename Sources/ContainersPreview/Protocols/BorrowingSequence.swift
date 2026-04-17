@@ -14,9 +14,10 @@
 #if compiler(>=6.4) && COLLECTIONS_UNSTABLE_CONTAINERS_PREVIEW
 
 @available(SwiftStdlib 5.0, *)
-public protocol BorrowingSequence_<Element_>: ~Copyable, ~Escapable {
+public protocol BorrowingSequence_<Element_, Error_>: ~Copyable, ~Escapable {
   associatedtype Element_: ~Copyable
-  associatedtype BorrowingIterator_: BorrowingIteratorProtocol_<Element_> & ~Copyable & ~Escapable
+  associatedtype Error_: Error
+  associatedtype BorrowingIterator_: BorrowingIteratorProtocol_<Element_, Error_> & ~Copyable & ~Escapable
   
   var underestimatedCount_: Int { get }
 
@@ -58,12 +59,12 @@ where
 {
   /// Implementation demo of what borrowing for-in loops would need to expand into.
   @inlinable
-  public func _borrowingForEach<E: Error>(
-    _ body: (borrowing Element_) throws(E) -> Void
-  ) throws(E) -> Void {
+  public func _borrowingForEach(
+    _ body: (borrowing Element_) throws(Error_) -> Void
+  ) throws(Error_) -> Void {
     var it = makeBorrowingIterator_()
     while true {
-      let span = it.nextSpan_()
+      let span = try it.nextSpan_()
       if span.isEmpty { break }
       var i = 0
       while i < span.count {

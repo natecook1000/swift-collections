@@ -25,7 +25,7 @@ where
   /// will get copied.
   @inlinable
   @_lifetime(copy self)
-  public consuming func copy() -> BorrowingMapProducer<Self, Element_, Never> {
+  public consuming func copy() -> BorrowingMapProducer<Self, Element_, Error_> {
     // FIXME: We could also just define a direct implementation that avoids the closure.
     BorrowingMapProducer(_base: self, transform: { $0 })
   }

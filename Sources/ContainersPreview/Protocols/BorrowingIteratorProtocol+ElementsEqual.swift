@@ -25,7 +25,7 @@ where
 {
   @inlinable
   package func _elementsEqual<
-    Other: BorrowingSequence_<Element_> & ~Copyable & ~Escapable
+    Other: BorrowingSequence_<Element_, Error_> & ~Copyable & ~Escapable
   >(
     _ other: borrowing Other,
   ) -> Bool
@@ -88,7 +88,7 @@ where
 {
   @inlinable
   package consuming func elementsEqual<
-    Other: BorrowingIteratorProtocol_<Element_> & ~Copyable & ~Escapable
+    Other: BorrowingIteratorProtocol_<Element_, Error_> & ~Copyable & ~Escapable
   >(
     _ other: consuming Other,
   ) -> Bool
@@ -114,10 +114,10 @@ where
 
   @inlinable
   package consuming func _directElementsEqual<
-    Other: BorrowingIteratorProtocol_<Element_> & ~Copyable & ~Escapable
+    Other: BorrowingIteratorProtocol_<Element_, Error_> & ~Copyable & ~Escapable
   >(
     _ other: consuming Other,
-  ) -> Bool
+  ) throws(Error_) -> Bool
   where Other.Element_: ~Copyable
   {
 #if true // FIXME: rdar://150228920 Exclusive access scopes aren't expanded enough
@@ -126,13 +126,13 @@ where
     // (It lets the two iterators run at their native speeds, with no artificial
     // maximumCounts.)
     while true {
-      let a = self.nextSpan_()
+      let a = try self.nextSpan_()
       var i = 0
       if a.isEmpty {
-        return other.nextSpan_().isEmpty
+        return try other.nextSpan_().isEmpty
       }
       while i < a.count {
-        let b = other.nextSpan_(maximumCount: a.count - i)
+        let b = try other.nextSpan_(maximumCount: a.count - i)
         if b.isEmpty {
           return false
         }
